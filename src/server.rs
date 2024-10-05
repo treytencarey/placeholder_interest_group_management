@@ -92,6 +92,7 @@ pub(crate) fn handle_connections(
         // this means that all clients will be able to see all player entities
         room_manager.add_client(client_id, RoomId(0));
         room_manager.add_entity(entity, RoomId(0));
+        commands.entity(entity).insert(TimerComponent(Timer::from_seconds(5.0, TimerMode::Once)));
         commands.entity(text_entity).insert(TimerComponent(Timer::from_seconds(5.0, TimerMode::Once)));
     }
 }
