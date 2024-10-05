@@ -84,20 +84,38 @@ pub(crate) fn player_text_changed(
     mut player_query: Query<(&PlayerText, &mut Text), Changed<PlayerText>>,
 ) {
     for (player_text, mut text) in player_query.iter_mut() {
+        info!("Player text changed: {:?}", player_text.0);
         text.sections[0].value = player_text.0.clone();
     }
 }
 
 pub(crate) fn handle_spawn(
     mut commands: Commands,
-    mut player_text_query: Query<(&PlayerParent, &PlayerText), (Or<(Added<Predicted>, Added<Interpolated>)>, Without<PlayerId>)>,
+    mut player_query: Query<(Entity, &PlayerText), (Or<(Added<Predicted>, Added<Interpolated>)>, With<PlayerId>)>,
+    mut playertext_query: Query<(&PlayerParent, &PlayerText), (Or<(Added<Predicted>, Added<Interpolated>)>)>,
 ) {
-    for (parent, player_text) in player_text_query.iter_mut() {
-        info!("Player spawned: {:?}", player_text.0);
-        commands.entity(parent.0).insert(Text2dBundle {
+    for (entity, player_text) in player_query.iter_mut() {
+        info!("PlayerBundle spawned: {:?}", player_text.0);
+        commands.entity(entity).insert(Text2dBundle {
             text: Text::from_section(player_text.0.clone(), TextStyle {
                 font_size: 30.0,
                 color: Color::WHITE,
+                ..default()
+            })
+            .with_no_wrap()
+            .with_justify(JustifyText::Center),
+            transform: Transform::from_translation(Vec3::new(
+                0.0,0.0,0.0
+            )),
+            ..default()
+        });
+    }
+    for (parent, player_text) in playertext_query.iter_mut() {
+        info!("PlayerTextBundle spawned: {:?}", player_text.0);
+        commands.entity(parent.0).insert(Text2dBundle {
+            text: Text::from_section(player_text.0.clone(), TextStyle {
+                font_size: 30.0,
+                color: Color::BLACK,
                 ..default()
             })
             .with_no_wrap()

@@ -22,6 +22,7 @@ use crate::shared::color_from_id;
 #[derive(Bundle)]
 pub(crate) struct PlayerBundle {
     id: PlayerId,
+    player_text: PlayerText,
     position: Position,
     last_position: LastPosition,
     color: PlayerColor,
@@ -39,6 +40,7 @@ pub(crate) struct PlayerTextBundle {
 impl PlayerBundle {
     pub(crate) fn new(id: ClientId, position: Vec2) -> Self {
         let color = color_from_id(id);
+        let player_text = PlayerText("Text from PlayerBundle".to_string());
         let replicate = Replicate {
             sync: SyncTarget {
                 prediction: NetworkTarget::Single(id),
@@ -56,6 +58,7 @@ impl PlayerBundle {
         };
         Self {
             id: PlayerId(id),
+            player_text,
             position: Position(position),
             last_position: LastPosition(position),
             color: PlayerColor(color),
@@ -81,9 +84,10 @@ impl PlayerBundle {
 
 impl PlayerTextBundle {
     pub(crate) fn new(id: ClientId, parent: Entity) -> Self {
+        let player_text = PlayerText("Server should change this...".to_string());
         Self {
             parent: PlayerParent(parent),
-            player_text: PlayerText("Server should change this...".to_string()),
+            player_text,
             replicate: Replicate {
                 sync: SyncTarget {
                     prediction: NetworkTarget::Single(id),
