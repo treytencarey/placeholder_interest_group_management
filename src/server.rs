@@ -109,7 +109,7 @@ pub(crate) fn check_timers(mut commands: Commands,
         if timer.0.finished() {
             info!("Timer finished");
             // TODO - Why is this not replicating to the client?
-            *player_text = PlayerText("Server changed".to_string());
+            player_text.0 = "Server changed".to_string();
             commands.entity(entity).remove::<TimerComponent>();
         }
     }
