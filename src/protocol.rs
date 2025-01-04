@@ -16,17 +16,19 @@ use lightyear::prelude::*;
 use lightyear::shared::replication::components::NetworkRelevanceMode;
 use UserAction;
 
-use crate::shared::color_from_id;
+use crate::renderer::color_from_id;
 
 // Player
 #[derive(Bundle)]
 pub(crate) struct PlayerBundle {
     id: PlayerId,
     position: Position,
+    transform: Transform,
     last_position: LastPosition,
     color: PlayerColor,
     replicate: Replicate,
     action_state: ActionState<Inputs>,
+    name: Name,
 }
 
 #[derive(Bundle)]
@@ -34,6 +36,7 @@ pub(crate) struct PlayerTextBundle {
     parent: PlayerParent,
     replicate: Replicate,
     player_text: PlayerText,
+    name: Name,
 }
 
 impl PlayerBundle {
@@ -57,10 +60,12 @@ impl PlayerBundle {
         Self {
             id: PlayerId(id),
             position: Position(position),
+            transform: Transform::from_translation(Vec3::new(position.x, position.y, 0.0)),
             last_position: LastPosition(position),
             color: PlayerColor(color),
             replicate,
             action_state: ActionState::default(),
+            name: Name::from(format!("Player {}", id)),
         }
     }
     pub(crate) fn get_input_map() -> InputMap<Inputs> {
@@ -97,6 +102,7 @@ impl PlayerTextBundle {
                 group: ReplicationGroup::default().set_id(parent.to_bits()),
                 ..default()
             },
+            name: Name::from(format!("Player Text {}", id)),
         }
     }
 }

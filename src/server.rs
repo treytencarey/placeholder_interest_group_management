@@ -8,10 +8,11 @@ use lightyear::prelude::*;
 
 use crate::protocol::*;
 use crate::shared;
-use crate::shared::{color_from_id, shared_movement_behaviour};
+use crate::shared::{shared_movement_behaviour};
+use crate::renderer::color_from_id;
 
 const GRID_SIZE: f32 = 200.0;
-const NUM_CIRCLES: i32 = 10;
+const NUM_CIRCLES: i32 = 0;
 const INTEREST_RADIUS: f32 = 150.0;
 
 // Plugin for server-specific logic
@@ -45,20 +46,6 @@ pub(crate) struct Global {
 
 pub(crate) fn init(mut commands: Commands) {
     commands.start_server();
-    commands.spawn(
-        TextBundle::from_section(
-            "Server",
-            TextStyle {
-                font_size: 30.0,
-                color: Color::WHITE,
-                ..default()
-            },
-        )
-        .with_style(Style {
-            align_self: AlignSelf::End,
-            ..default()
-        }),
-    );
 
     // spawn dots in a grid
     for x in -NUM_CIRCLES..NUM_CIRCLES {
@@ -92,6 +79,7 @@ pub(crate) fn handle_connections(
         // this means that all clients will be able to see all player entities
         room_manager.add_client(client_id, RoomId(0));
         room_manager.add_entity(entity, RoomId(0));
+        // room_manager.add_entity(text_entity, RoomId(0));
         commands.entity(text_entity).insert(TimerComponent(Timer::from_seconds(5.0, TimerMode::Once)));
     }
 }

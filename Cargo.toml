@@ -14,12 +14,17 @@ publish = false
 
 [features]
 metrics = ["lightyear/metrics", "dep:metrics-exporter-prometheus"]
+default = []
+gui = ["lightyear_examples_common/gui"]
+client = ["lightyear_examples_common/client", "gui"]
+server = ["lightyear_examples_common/server"]
+steam = ["lightyear_examples_common/steam"]
+
 
 [dependencies]
-lightyear_examples_common = { path = "../lightyear/examples/common" }
-leafwing-input-manager = "0.15"
+lightyear_examples_common = { path = "../lightyear/examples/common", default-features = false }
+leafwing-input-manager = "0.16"
 lightyear = { path = "../lightyear/lightyear", features = [
-  "webtransport",
   "websocket",
   "leafwing",
   "steam",
@@ -28,7 +33,7 @@ serde = { version = "1.0.188", features = ["derive"] }
 anyhow = { version = "1.0.75", features = [] }
 tracing = "0.1"
 tracing-subscriber = "0.3.17"
-bevy = { version = "0.14", features = [
+bevy = { version = "0.15", features = [
   "multi_threaded",
   "bevy_state",
   "serialize",

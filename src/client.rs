@@ -13,7 +13,6 @@ impl Plugin for ExampleClientPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<ActionState<Inputs>>();
         app.add_systems(Startup, init);
-        app.add_systems(PreUpdate, handle_connection.after(MainSet::Receive));
         app.add_systems(FixedUpdate, movement);
         app.add_systems(
             Update,
@@ -31,25 +30,6 @@ impl Plugin for ExampleClientPlugin {
 /// Startup system for the client
 pub(crate) fn init(mut commands: Commands) {
     commands.connect_client();
-}
-
-/// Listen for events to know when the client is connected, and spawn a text entity
-/// to display the client id
-pub(crate) fn handle_connection(
-    mut commands: Commands,
-    mut connection_event: EventReader<ConnectEvent>,
-) {
-    for event in connection_event.read() {
-        let client_id = event.client_id();
-        commands.spawn(TextBundle::from_section(
-            format!("Client {}", client_id),
-            TextStyle {
-                font_size: 30.0,
-                color: Color::WHITE,
-                ..default()
-            },
-        ));
-    }
 }
 
 // The client input only gets applied to predicted entities that we own
@@ -79,34 +59,31 @@ pub(crate) fn add_input_map(
     }
 }
 
-// TODO - This isn't being called, but it does when not using Group Management?
 pub(crate) fn player_text_changed(
-    mut player_query: Query<(&PlayerText, &mut Text), Changed<PlayerText>>,
+    mut player_query: Query<(&PlayerText, &mut Text2d), Changed<PlayerText>>,
 ) {
     for (player_text, mut text) in player_query.iter_mut() {
-        text.sections[0].value = player_text.0.clone();
+        text.0 = player_text.0.clone();
     }
 }
 
 pub(crate) fn handle_spawn(
     mut commands: Commands,
-    mut player_text_query: Query<(&PlayerParent, &PlayerText), (Or<(Added<Predicted>, Added<Interpolated>)>, Without<PlayerId>)>,
+    player_parent: Query<&PlayerId>,
+    mut player_text_query: Query<(Entity, &PlayerParent, &PlayerText), (Or<(Added<Predicted>, Added<Interpolated>)>, Without<PlayerId>)>,
 ) {
-    for (parent, player_text) in player_text_query.iter_mut() {
+    for (entity, parent, player_text) in player_text_query.iter_mut() {
         info!("Player spawned: {:?}", player_text.0);
-        commands.entity(parent.0).insert(Text2dBundle {
-            text: Text::from_section(player_text.0.clone(), TextStyle {
-                font_size: 30.0,
-                color: Color::WHITE,
-                ..default()
-            })
-            .with_no_wrap()
-            .with_justify(JustifyText::Center),
-            transform: Transform::from_translation(Vec3::new(
-                0.0,0.0,0.0
-            )),
-            ..default()
-        });
+        let player_id = player_parent.get(parent.0).unwrap();
+        commands.entity(parent.0).insert((
+            Name::from(format!("Player {}", player_id.0)),
+        ));
+        commands.entity(entity).insert((
+            Text2d(player_text.0.clone()),
+            TextFont::from_font_size(8.0),
+            Transform::default(),
+            Name::from(format!("PlayerText {}", player_id.0)),
+        ));
     }
 }
 
@@ -118,7 +95,7 @@ pub(crate) fn handle_predicted_spawn(mut predicted: Query<&mut PlayerColor, Adde
             saturation: 0.4,
             ..Hsva::from(color.0)
         };
-        color.0 = Color::from(hsva);
+        color.0 = Color::Hsva(hsva);
     }
 }
 
@@ -132,6 +109,6 @@ pub(crate) fn handle_interpolated_spawn(
             saturation: 0.1,
             ..Hsva::from(color.0)
         };
-        color.0 = Color::from(hsva);
+        color.0 = Color::Hsva(hsva);
     }
 }
